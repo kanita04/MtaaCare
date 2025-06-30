@@ -8,7 +8,9 @@ import SwiftUI
 struct MtaaCareApp: App {
     var body: some Scene {
         WindowGroup {
-            SplashScreen()
+            NavigationStack {
+                SplashScreen()
+            }
         }
     }
 }
