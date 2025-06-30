@@ -1,9 +1,6 @@
 //
 //  MtaaCareApp.swift
 //  MtaaCare
-//
-//  Created by Amy Gathoni on 21/06/2025.
-//
 
 import SwiftUI
 
@@ -11,7 +8,7 @@ import SwiftUI
 struct MtaaCareApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreen()
         }
     }
 }
