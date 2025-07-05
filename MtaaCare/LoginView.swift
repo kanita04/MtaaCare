@@ -3,20 +3,25 @@
 //  MtaaCare
 
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 struct LoginView: View {
+    @EnvironmentObject var appState: AppState
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var isPasswordVisible: Bool = false
+    @State private var navigateToSignup: Bool = false
 
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
 
             // Logo
-            Text("MC")
-                .font(.system(size: 64, weight: .bold))
-                .foregroundColor(Color.green)
+            Image("logo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 150, height: 150)
 
             // App name
             Text("MtaaCare")
@@ -61,12 +66,29 @@ struct LoginView: View {
 
             // Sign In Button
             Button(action: {
-                // TODO: Add sign-in logic
+                Auth.auth().signIn(withEmail: email, password: password) { result, error in
+                    if let user = result?.user {
+                        print("Signed in: \(user.uid)")
+                        let db = Firestore.firestore()
+                        db.collection("users").document(user.uid).getDocument { snapshot, error in
+                            DispatchQueue.main.async {
+                                if let data = snapshot?.data(), let role = data["role"] as? String {
+                                    appState.userRole = role.lowercased() == "officer" ? .officer : .resident
+                                } else {
+                                    appState.userRole = .resident // fallback
+                                }
+                                appState.isLoggedIn = true
+                            }
+                        }
+                    } else if let error = error {
+                        print("Error: \(error.localizedDescription)")
+                    }
+                }
             }) {
                 Text("Sign In")
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.green)
+                    .background(Color.mtaaGreen)
                     .foregroundColor(.white)
                     .cornerRadius(30)
                     .padding(.horizontal)
@@ -76,7 +98,7 @@ struct LoginView: View {
             HStack {
                 Text("Don't have an account?")
                 Button(action: {
-                    // TODO: Navigate to sign up screen
+                    navigateToSignup = true
                 }) {
                     Text("Sign Up")
                         .foregroundColor(.blue)
@@ -84,6 +106,11 @@ struct LoginView: View {
                 }
             }
 
+            .navigationDestination(isPresented: $navigateToSignup) {
+                SignupView()
+                    .environmentObject(appState)
+            }
+            
             Spacer()
 
             // Terms and Privacy
@@ -95,4 +122,3 @@ struct LoginView: View {
         }
     }
 }
-
